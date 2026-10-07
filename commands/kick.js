@@ -3,6 +3,7 @@
 const { PermissionFlagsBits } = require('discord.js');
 const ui = require('../utils/ui');
 const { hasAnyStaffRole } = require('../config/roles');
+const { buildModEmbed } = require('../utils/modEmbed');
 
 async function execute(message, args) {
   if (!hasAnyStaffRole(message.member)) {
@@ -22,7 +23,7 @@ async function execute(message, args) {
 
   try {
     await target.kick(reason);
-    await message.reply({ embeds: [ui.success(message.client, 'Kicked', `**${target.user.tag}** was kicked.\nReason: \`${reason || 'None'}\``)] });
+    await message.reply({ embeds: [buildModEmbed({ action: 'kick', target: target.user, moderator: message.author, reason })] });
   } catch (err) {
     await message.reply({ embeds: [ui.error(message.client, 'Kick Failed', err.message)] });
   }

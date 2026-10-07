@@ -5,7 +5,8 @@ const theme = require('../utils/theme');
 const ui    = require('../utils/ui');
 const eb    = require('../utils/embedBuilder');
 const ce    = require('../utils/customEmojis');
-const { hasAnyAdminRole } = require('../config/roles');
+const { hasAnyStaffRole } = require('../config/roles');
+const { buildModEmbed } = require('../utils/modEmbed');
 
 const pending = new Map();
 
@@ -17,12 +18,12 @@ function getPending(msgId) { return pending.get(msgId) ?? null; }
 function clearPending(msgId) { pending.delete(msgId); }
 
 function buildBanResultEmbed(target, moderator, reason, action = 'ban') {
-  return eb.banResultEmbed(target, moderator, reason, action);
+  return buildModEmbed({ action, target, moderator, reason });
 }
 
 async function execute(message, args) {
-  if (!hasAnyAdminRole(message.member)) {
-    return message.reply({ embeds: [ui.noPerm(message.client, 'Admin')] });
+  if (!hasAnyStaffRole(message.member)) {
+    return message.reply({ embeds: [ui.noPerm(message.client, 'Staff')] });
   }
 
   // Support both @mention and raw user ID

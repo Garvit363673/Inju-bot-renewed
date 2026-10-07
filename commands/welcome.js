@@ -41,9 +41,7 @@ function buildWelcome(member, { invitedBy = 'Unknown', inviteCode = 'Unknown' } 
     `${BULLET} **Make sure to read the rules and verify!**`,
   ].join('\n');
 
-  const thumbnail =
-    guild.iconURL({ extension: 'png', size: 256 }) ??
-    user.displayAvatarURL({ extension: 'png', size: 256 });
+  const thumbnail = user.displayAvatarURL({ extension: 'png', size: 256 });
 
   const embed = new EmbedBuilder()
     .setColor(EMBED_COLOR)

@@ -3,6 +3,7 @@
 const { PermissionFlagsBits } = require('discord.js');
 const ui = require('../utils/ui');
 const { hasAnyStaffRole } = require('../config/roles');
+const { buildModEmbed } = require('../utils/modEmbed');
 
 async function execute(message, args) {
   if (!hasAnyStaffRole(message.member)) {
@@ -25,7 +26,7 @@ async function execute(message, args) {
 
   try {
     await target.timeout(ms, reason);
-    await message.reply({ embeds: [ui.success(message.client, 'Timed Out', `**${target.user.tag}** was timed out for **${minutes} min**.\nReason: \`${reason || 'None'}\``)] });
+    await message.reply({ embeds: [buildModEmbed({ action: 'timeout', target: target.user, moderator: message.author, reason, duration: `${minutes} min` })] });
   } catch (err) {
     await message.reply({ embeds: [ui.error(message.client, 'Timeout Failed', err.message)] });
   }

@@ -2,6 +2,7 @@ const User = require('../database/models/User');
 const config = require('../config/bot');
 const logger = require('../utils/logger');
 const { buildWelcome } = require('../commands/welcome');
+const { resolveInvite } = require('../utils/inviteTracker');
 
 function findWelcomeChannel(guild) {
   const id = process.env.WELCOME_CHANNEL_ID;
@@ -39,7 +40,8 @@ module.exports = {
         logger.warn('Welcome: no channel found. Set WELCOME_CHANNEL_ID in Railway.');
         return;
       }
-      await channel.send(buildWelcome(member));
+      const invite = await resolveInvite(member);
+      await channel.send(buildWelcome(member, invite));
     } catch (err) {
       logger.error(`Welcome message error: ${err.message}`);
     }

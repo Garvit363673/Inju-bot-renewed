@@ -5,8 +5,9 @@ const { toSmallCaps } = require('../utils/smallCaps');
 
 /* ─────────────── Welcome card settings ─────────────── */
 
-const SERVER_NAME   = 'Astral';
-const SERVER_EMOJI  = '🎃';       // replaces the pumpkin; change it to any emoji you like
+const SERVER_NAME   = 'Astral';       // shown in the header and footer
+const BOT_NAME      = 'BADDIES BOT';  // shown in the footer as "<BOT_NAME> SYSTEM"
+const SERVER_EMOJI  = '🎃';       // change it to any emoji you like
 const BULLET        = '▼';
 const EMBED_COLOR   = 0x0b0b0f;   // near-black, matches the dark card
 const BANNER_GIF    =
@@ -49,7 +50,7 @@ function buildWelcome(member, { invitedBy = 'Unknown', inviteCode = 'Unknown' } 
     .setThumbnail(thumbnail)
     .setImage(BANNER_GIF)
     .setFooter({
-      text: `${SERVER_NAME.toUpperCase()} SYSTEM • ${SERVER_EMOJI} ${fancy(SERVER_NAME)}`,
+      text: `${BOT_NAME} SYSTEM • ${SERVER_EMOJI} ${fancy(SERVER_NAME)}`,
       iconURL: guild.iconURL({ extension: 'png', size: 64 }) ?? undefined,
     });
 

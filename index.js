@@ -13,6 +13,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildInvites,
     GatewayIntentBits.MessageContent,
   ],
   partials: [
@@ -24,6 +25,7 @@ const client = new Client({
 });
 
 global.client = client;
+require('./utils/inviteTracker').init(client);
 
 async function bootstrap() {
   await connectDB(config.mongoUri);

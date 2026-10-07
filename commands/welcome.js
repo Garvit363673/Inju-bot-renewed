@@ -6,7 +6,7 @@ const { toSmallCaps } = require('../utils/smallCaps');
 /* ─────────────── Welcome card settings ─────────────── */
 
 const SERVER_NAME   = 'Astral';
-const SERVER_EMOJI  = '✨';       // replaces the pumpkin; change it to any emoji you like
+const SERVER_EMOJI  = '🎃';       // replaces the pumpkin; change it to any emoji you like
 const BULLET        = '▼';
 const EMBED_COLOR   = 0x0b0b0f;   // near-black, matches the dark card
 const BANNER_GIF    =

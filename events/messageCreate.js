@@ -23,7 +23,7 @@ function registerCommands() {
   const commandFiles = [
     'help', 'stats', 'daily', 'domains', 'check', 'check-s', 'check-d',
     'site', 'support', 'info', 'userinfo', 'avatar', 'ban', 'unban', 'ticket', 'vouch', 'hyperlink', 'dm', 'dualhook', 'purge',
-    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed',
+    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed',  'welcome',
   ];
 
   for (const name of commandFiles) {

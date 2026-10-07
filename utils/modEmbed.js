@@ -7,8 +7,8 @@ const { toSmallCaps } = require('./smallCaps');
 
 const BRAND        = 'ASTRAL';
 const EMBED_COLOR  = 0x0b0b0f; // black
-const ICON_MEMBER  = '🌟';
-const ICON_LINE    = '🔹';
+const ICON_MEMBER  = '🎃';
+const ICON_LINE    = '👻';
 const MOD_GIF      =
   'https://media.discordapp.net/attachments/1525511271552778260/1553753885485830355/a_5c96f91e2a5959b28381cce711a95e74.gif?ex=6ac6ebd1&is=6ac59a51&hm=85660dfc3626a373ab32f587a763abca602653a0ff16886cfdb9d43d478ba919&';
 

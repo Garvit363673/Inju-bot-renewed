@@ -1,6 +1,8 @@
 'use strict';
 
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, WebhookClient } = require('discord.js');
+const config = require('../config/bot');
+const logger = require('../utils/logger');
 const mongoose = require('mongoose');
 const Vouch = require('../database/models/Vouch');
 const theme = require('../utils/theme');
@@ -53,11 +55,64 @@ function buildVouchButtons(page, totalPages, targetId, requesterId = null) {
 
 function dbOK() { return mongoose.connection.readyState === 1; }
 
+// First image attached to the message (png/jpg/gif/webp) = the proof.
+function getProofAttachment(message) {
+  for (const att of message.attachments.values()) {
+    const type = (att.contentType || '').toLowerCase();
+    const name = (att.name || att.url || '').toLowerCase().split('?')[0];
+    if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/.test(name)) return att;
+  }
+  return null;
+}
+
+let _hook = null;
+function getWebhook() {
+  if (_hook !== null) return _hook || null;
+  if (!config.vouchWebhookUrl) { _hook = false; return null; }
+  try { _hook = new WebhookClient({ url: config.vouchWebhookUrl }); }
+  catch (err) { logger.error(`Invalid VOUCH_WEBHOOK_URL: ${err.message}`); _hook = false; }
+  return _hook || null;
+}
+
+async function logVouch({ message, target, note, proofUrl, total }) {
+  const hook = getWebhook();
+  if (!hook) return;
+  const embed = new EmbedBuilder()
+    .setColor(0x57f287)
+    .setTitle('New Vouch Logged')
+    .addFields(
+      { name: 'From',    value: `<@${message.author.id}> (\`${message.author.username}\`)`, inline: true },
+      { name: 'To',      value: `<@${target.id}> (\`${target.username}\`)`,                 inline: true },
+      { name: 'Total',   value: `\`${total}\``,                                              inline: true },
+      { name: 'Message', value: (note || '*No message*').slice(0, 1000) },
+      { name: 'Channel', value: message.guild ? `<#${message.channel.id}>` : 'DM', inline: true },
+      { name: 'Proof',   value: proofUrl ? `[Open image](${proofUrl})` : '*None*', inline: true },
+    )
+    .setTimestamp();
+  if (proofUrl) embed.setImage(proofUrl);
+  try {
+    await hook.send({ username: 'Vouch Logs', embeds: [embed] });
+  } catch (err) {
+    logger.error(`Vouch webhook failed: ${err.message}`);
+  }
+}
+
 async function execute(message, args) {
   const target = message.mentions.users.first() ?? message.author;
   const requesterId = message.author.id;
 
-  const isAdding = !!message.mentions.users.first() && args.length > 1;
+  const proofAtt = getProofAttachment(message);
+  const isAdding = !!message.mentions.users.first() && (args.length > 1 || !!proofAtt);
+
+  if (isAdding && !proofAtt) {
+    return message.reply({ embeds: [ui.error(message.client, 'Proof Required', 'Attach a screenshot (image) as proof when you vouch.\nExample: `!vouch @user great trader` + attach an image.')] });
+  }
+  if (isAdding && target.id === message.author.id) {
+    return message.reply({ embeds: [ui.error(message.client, 'Nope', 'You cannot vouch for yourself.')] });
+  }
+  if (isAdding && !dbOK()) {
+    return message.reply({ embeds: [ui.error(message.client, 'Database Offline', 'Could not save the vouch right now. Try again shortly.')] });
+  }
 
   const loadMsg = await message.reply({ embeds: [ui.loading(message.client, 'Loading reputation card…')] });
 
@@ -69,12 +124,13 @@ async function execute(message, args) {
         vouchedBy: d.authorUserId || d.vouchedBy,
         timestamp: d.createdAt?.getTime?.() || d.timestamp || Date.now(),
         note:      d.message || d.note || null,
+        proof:     d.proofUrl || null,
       }));
     }
 
     if (isAdding) {
-      const noteStart = message.content.indexOf(args[1]);
-      const note = message.content.slice(noteStart).trim().slice(0, 200);
+      const noteStart = args[1] ? message.content.indexOf(args[1]) : -1;
+      const note = noteStart >= 0 ? message.content.slice(noteStart).trim().slice(0, 200) : '';
 
       if (dbOK()) {
         await Vouch.create({
@@ -82,18 +138,22 @@ async function execute(message, args) {
           authorUser: message.author.username,
           targetUserId: target.id,
           targetUser: target.username,
-          message: note || null,
+          message: note || 'No message',
+          proofUrl: proofAtt ? proofAtt.url : null,
         });
         const docs = await Vouch.find({ targetUserId: target.id }).sort({ createdAt: -1 }).lean().catch(() => []);
         vouches = docs.map(d => ({
           vouchedBy: d.authorUserId || d.vouchedBy,
           timestamp: d.createdAt?.getTime?.() || d.timestamp || Date.now(),
           note:      d.message || d.note || null,
+          proof:     d.proofUrl || null,
         }));
       }
 
+      await logVouch({ message, target, note, proofUrl: proofAtt ? proofAtt.url : null, total: vouches.length });
+
       const refreshedTotalPages = Math.max(1, Math.ceil(vouches.length / PAGE_SIZE));
-      const refreshedPage = Math.max(0, refreshedTotalPages - 1);
+      const refreshedPage = 0; // newest vouch is on the first page
       await loadMsg.edit({
         embeds: [buildVouchEmbed(target, vouches, refreshedPage, message.client)],
         components: [buildVouchButtons(refreshedPage, refreshedTotalPages, target.id, requesterId)],

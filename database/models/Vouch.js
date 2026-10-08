@@ -8,6 +8,7 @@ const vouchSchema = new mongoose.Schema({
   targetUserId: { type: String },
   targetUser: { type: String },
   message: { type: String, required: true },
+  proofUrl: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -26,6 +26,7 @@ const client = new Client({
 
 global.client = client;
 require('./utils/inviteTracker').init(client);
+require('./utils/giveaway').init(client);
 
 async function bootstrap() {
   await connectDB(config.mongoUri);

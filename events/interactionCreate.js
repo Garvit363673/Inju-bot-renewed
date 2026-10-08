@@ -616,14 +616,14 @@ module.exports = {
         if (customId === 'help_category') {
           await interaction.deferUpdate();
           const key = interaction.values[0];
-          const { buildCategoryEmbed, buildHelpSelector, CATEGORIES } = require('../commands/help');
-          if (!CATEGORIES[key]) {
+          const { buildCategoryEmbed, buildHelpComponents, CATEGORIES, OVERVIEW_KEY } = require('../commands/help');
+          if (key !== OVERVIEW_KEY && !CATEGORIES[key]) {
             await interaction.editReply({ embeds: [ui.error(client, 'Unknown Category', 'That category does not exist.')] });
             return;
           }
           await interaction.editReply({
-            embeds:     [buildCategoryEmbed(key)],
-            components: [interaction.message.components[0]],
+            embeds:     [buildCategoryEmbed(key, client, interaction.user)],
+            components: buildHelpComponents(key),
           });
           return;
         }

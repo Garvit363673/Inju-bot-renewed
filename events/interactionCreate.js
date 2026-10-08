@@ -273,6 +273,7 @@ module.exports = {
               vouchedBy: d.authorUserId || d.vouchedBy,
               timestamp: d.createdAt?.getTime?.() || d.timestamp || Date.now(),
               note: d.message || d.note || null,
+              proof: d.proofUrl || null,
             }));
           }
 

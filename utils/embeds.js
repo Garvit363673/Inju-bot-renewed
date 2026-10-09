@@ -61,6 +61,7 @@ function banResultEmbed(target, moderator, reason, action = 'ban') {
 }
 
 function vouchEmbed(target, vouches, opts = {}) {
+  const { EmbedBuilder } = require('discord.js');
   const PAGE_SIZE = 5;
   const list = Array.isArray(vouches) ? vouches : [];
   const totalPages = Math.max(1, opts.totalPages || Math.ceil(list.length / PAGE_SIZE));
@@ -70,31 +71,34 @@ function vouchEmbed(target, vouches, opts = {}) {
   let tier = null;
   try { tier = require('../commands/vouch').getVouchTier(list.length); } catch (_) { /* optional */ }
 
-  const body = slice.length
-    ? slice.map((v, i) => {
-        const n = list.length - (page * PAGE_SIZE + i);
-        const when = v.timestamp ? `<t:${Math.floor(Number(v.timestamp) / 1000)}:R>` : '';
-        const by = v.vouchedBy ? `<@${v.vouchedBy}>` : '`unknown`';
-        const note = v.note ? String(v.note).replace(/\n+/g, ' ').slice(0, 200) : '*No message*';
-        const proof = v.proof ? `\n[\uD83D\uDCCE View Proof](${v.proof})` : '';
-        return `**#${n}**  ${by}  ${when}\n> ${note}${proof}`;
-      }).join('\n\n')
-    : '*No vouches yet.*';
+  const embed = new EmbedBuilder()
+    .setColor(0x2b2d31)
+    .setTitle('Vouch Ledger')
+    .addFields(
+      { name: '▾ Subject',    value: `▾ ${target ? `<@${target.id}>` : 'Unknown'}\n▾ \`${target ? target.username : '—'}\``, inline: true },
+      { name: '▾ Reputation', value: `▾ **Tier:** ${tier ? tier.label : 'New'}\n▾ **Vouches:** ${list.length}`, inline: true },
+      { name: '▾ Page',       value: `▾ ${page + 1} / ${totalPages}`, inline: true },
+    );
 
-  const sections = [
-    { title: `Vouches  (Page ${page + 1} / ${totalPages})`, body },
-  ];
-
-  const metrics = [{ label: 'Total Vouches', value: list.length }];
-
-  const out = e.HeavyData(opts.client, {
-    title: 'Vouch Ledger', moduleName: 'VOUCH', subject: target, sections, metrics,
-  }).embeds[0];
-
-  if (tier && typeof out.addFields === 'function') {
-    out.addFields({ name: 'Reputation Tier', value: `\`${tier.label.toUpperCase()}\``, inline: true });
+  if (!slice.length) {
+    embed.addFields({ name: 'Vouches', value: '*No vouches yet.*' });
+  } else {
+    slice.forEach((v, i) => {
+      const n = list.length - (page * PAGE_SIZE + i);
+      const when = v.timestamp ? ` • <t:${Math.floor(Number(v.timestamp) / 1000)}:R>` : '';
+      const by = v.vouchedBy ? `<@${v.vouchedBy}>` : '`unknown`';
+      const note = v.note ? String(v.note).replace(/\n+/g, ' ').slice(0, 200) : '*No message*';
+      const proof = v.proof ? `\n[📎 View Proof](${v.proof})` : '';
+      embed.addFields({ name: `▾ Vouch #${n}`, value: `From ${by}${when}\n> ${note}${proof}`.slice(0, 1024) });
+    });
   }
-  return out;
+
+  if (target && typeof target.displayAvatarURL === 'function') embed.setThumbnail(target.displayAvatarURL({ size: 128 }));
+  const rq = opts.requester;
+  const footer = { text: `Requested by ${rq ? rq.username : 'unknown'} • BADDIES Bot` };
+  if (rq && typeof rq.displayAvatarURL === 'function') footer.iconURL = rq.displayAvatarURL({ size: 64 });
+  embed.setFooter(footer);
+  return embed;
 }
 
 function ticketPanelEmbed(client) {

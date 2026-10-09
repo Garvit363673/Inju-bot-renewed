@@ -281,7 +281,7 @@ module.exports = {
           const nextPage   = dir === 'prev' ? Math.max(0, curPage - 1) : Math.min(totalPages - 1, curPage + 1);
 
           await interaction.editReply({
-            embeds:     [buildVouchEmbed(target, vouches, nextPage, client)],
+            embeds:     [buildVouchEmbed(target, vouches, nextPage, client, interaction.user)],
             components: [buildVouchButtons(nextPage, totalPages, targetId, requesterId)],
           });
           return;

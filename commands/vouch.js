@@ -27,9 +27,10 @@ function getVouchTier(count) {
   return VOUCH_TIERS.find(t => count >= t.min) ?? VOUCH_TIERS[VOUCH_TIERS.length - 1];
 }
 
-function buildVouchEmbed(targetUser, vouches, page = 0, client) {
+function buildVouchEmbed(targetUser, vouches, page = 0, client, requester = null) {
   return eb.vouchEmbed(targetUser, vouches, {
     client,
+    requester,
     page,
     totalPages: Math.max(1, Math.ceil(vouches.length / PAGE_SIZE)),
   });
@@ -78,16 +79,17 @@ async function logVouch({ message, target, note, proofUrl, total }) {
   const hook = getWebhook();
   if (!hook) return;
   const embed = new EmbedBuilder()
-    .setColor(0x57f287)
+    .setColor(0x2b2d31)
     .setTitle('New Vouch Logged')
     .addFields(
-      { name: 'From',    value: `<@${message.author.id}> (\`${message.author.username}\`)`, inline: true },
-      { name: 'To',      value: `<@${target.id}> (\`${target.username}\`)`,                 inline: true },
-      { name: 'Total',   value: `\`${total}\``,                                              inline: true },
-      { name: 'Message', value: (note || '*No message*').slice(0, 1000) },
-      { name: 'Channel', value: message.guild ? `<#${message.channel.id}>` : 'DM', inline: true },
-      { name: 'Proof',   value: proofUrl ? `[Open image](${proofUrl})` : '*None*', inline: true },
+      { name: '▾ From',   value: `▾ <@${message.author.id}>\n▾ \`${message.author.username}\``, inline: true },
+      { name: '▾ To',     value: `▾ <@${target.id}>\n▾ \`${target.username}\``,               inline: true },
+      { name: '▾ Stats',  value: `▾ **Total:** ${total}\n▾ **Channel:** ${message.guild ? `<#${message.channel.id}>` : 'DM'}`, inline: true },
+      { name: 'Message',  value: (note || '*No message*').slice(0, 1000) },
+      { name: 'Proof',    value: proofUrl ? `[📎 Open image](${proofUrl})` : '*None*' },
     )
+    .setThumbnail(target.displayAvatarURL({ size: 128 }))
+    .setFooter({ text: 'BADDIES Bot • Vouch Logs', iconURL: message.author.displayAvatarURL({ size: 64 }) })
     .setTimestamp();
   if (proofUrl) embed.setImage(proofUrl);
   try {
@@ -155,7 +157,7 @@ async function execute(message, args) {
       const refreshedTotalPages = Math.max(1, Math.ceil(vouches.length / PAGE_SIZE));
       const refreshedPage = 0; // newest vouch is on the first page
       await loadMsg.edit({
-        embeds: [buildVouchEmbed(target, vouches, refreshedPage, message.client)],
+        embeds: [buildVouchEmbed(target, vouches, refreshedPage, message.client, message.author)],
         components: [buildVouchButtons(refreshedPage, refreshedTotalPages, target.id, requesterId)],
       });
       return;
@@ -163,7 +165,7 @@ async function execute(message, args) {
 
     const totalPages = Math.max(1, Math.ceil(vouches.length / PAGE_SIZE));
     await loadMsg.edit({
-      embeds:     [buildVouchEmbed(target, vouches, 0, message.client)],
+      embeds:     [buildVouchEmbed(target, vouches, 0, message.client, message.author)],
       components: [buildVouchButtons(0, totalPages, target.id, requesterId)],
     });
   } catch (err) {

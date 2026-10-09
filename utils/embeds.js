@@ -61,7 +61,40 @@ function banResultEmbed(target, moderator, reason, action = 'ban') {
 }
 
 function vouchEmbed(target, vouches, opts = {}) {
-  return e.HeavyData(opts.client, { title: 'Vouch Ledger', moduleName: 'VOUCH', subject: target }).embeds[0];
+  const PAGE_SIZE = 5;
+  const list = Array.isArray(vouches) ? vouches : [];
+  const totalPages = Math.max(1, opts.totalPages || Math.ceil(list.length / PAGE_SIZE));
+  const page = Math.min(Math.max(0, opts.page || 0), totalPages - 1);
+  const slice = list.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  let tier = null;
+  try { tier = require('../commands/vouch').getVouchTier(list.length); } catch (_) { /* optional */ }
+
+  const body = slice.length
+    ? slice.map((v, i) => {
+        const n = list.length - (page * PAGE_SIZE + i);
+        const when = v.timestamp ? `<t:${Math.floor(Number(v.timestamp) / 1000)}:R>` : '';
+        const by = v.vouchedBy ? `<@${v.vouchedBy}>` : '`unknown`';
+        const note = v.note ? String(v.note).replace(/\n+/g, ' ').slice(0, 200) : '*No message*';
+        const proof = v.proof ? `\n[\uD83D\uDCCE View Proof](${v.proof})` : '';
+        return `**#${n}**  ${by}  ${when}\n> ${note}${proof}`;
+      }).join('\n\n')
+    : '*No vouches yet.*';
+
+  const sections = [
+    { title: `Vouches  (Page ${page + 1} / ${totalPages})`, body },
+  ];
+
+  const metrics = [{ label: 'Total Vouches', value: list.length }];
+
+  const out = e.HeavyData(opts.client, {
+    title: 'Vouch Ledger', moduleName: 'VOUCH', subject: target, sections, metrics,
+  }).embeds[0];
+
+  if (tier && typeof out.addFields === 'function') {
+    out.addFields({ name: 'Reputation Tier', value: `\`${tier.label.toUpperCase()}\``, inline: true });
+  }
+  return out;
 }
 
 function ticketPanelEmbed(client) {

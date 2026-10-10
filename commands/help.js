@@ -66,7 +66,6 @@ const CATEGORIES = {
       { name: '!hyperlink <url> <text>', desc: 'Generate a masked hyperlink — [text](url) format' },
       { name: '!dm @user <message>',    desc: 'Send a DM to a member via the bot' },
       { name: '!invite [@user]',        desc: 'Show how many people a member has invited' },
-      { name: '!embed',                 desc: 'Create all method threads with their messages in this channel' },
     ],
   },
 };

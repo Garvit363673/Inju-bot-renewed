@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const ui = require('../utils/ui');
-const eb = require('../utils/embedBuilder');
+const { cleanEmbed } = require('../embeds/factories/clean');
 const Log = require('../database/models/Log');
 
 async function execute(message, args) {
@@ -19,20 +19,22 @@ async function execute(message, args) {
       .lean();
 
     if (warns.length === 0) {
-      return message.reply({ embeds: [ui.info(message.client, 'Warnings', `**${target.tag}** has no warnings.`)] });
+      return message.reply({ embeds: [ui.info(message.client, 'Warnings', `**${target.username}** has no warnings.`)] });
     }
 
-    const lines = warns.map((w, i) =>
-      `**#${i + 1}** — ${w.reason || 'No reason'}\n> By <@${w.moderatorId}> · <t:${Math.floor(new Date(w.createdAt).getTime() / 1000)}:R>`
-    );
-
+    const fields = warns.map((w, i) => ({
+      name: `▾ Warning #${i + 1}`,
+      value: `${w.reason || 'No reason'}\nBy <@${w.moderatorId}> • <t:${Math.floor(new Date(w.createdAt).getTime() / 1000)}:R>`.slice(0, 1024),
+      inline: false,
+    }));
     return message.reply({
-      embeds: [eb.createEmbed({
-        palette: 'UTILITY',
+      embeds: [cleanEmbed({
         client: message.client,
-        authorTitle: `Warnings — ${target.tag}`,
-        description: lines.join('\n\n'),
-        footer: `Total: ${warns.length}`,
+        title: `Warnings — ${target.username}`,
+        description: `Total: **${warns.length}**`,
+        fields,
+        thumbnail: target.displayAvatarURL({ size: 128 }),
+        requester: message.author,
       })],
     });
   } catch (err) {

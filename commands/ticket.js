@@ -6,6 +6,7 @@ const { ticketPanelEmbed } = require('../utils/embeds');
 const ui = require('../utils/ui');
 const { getHeroGif } = require('../utils/emojis');
 const eb = require('../utils/embedBuilder');
+const { cleanEmbed, kv } = require('../embeds/factories/clean');
 const assets = require('../utils/assets');
 const { icon } = require('../utils/iconMap');
 
@@ -19,7 +20,7 @@ const TICKET_CATEGORIES = [
 function buildTicketSelector() {
   const menu = new StringSelectMenuBuilder()
     .setCustomId('ticket_category_select')
-    .setPlaceholder('Choose your mission type...')
+    .setPlaceholder('Choose a category…')
     .setMinValues(1)
     .setMaxValues(1)
     .addOptions(
@@ -34,15 +35,10 @@ function buildTicketSelector() {
 }
 
 function buildTicketConfirmEmbed(channel, categoryLabel) {
-  return eb.createEmbed({
-    color: theme.CYAN_GLOW,
-    client: null,
-    authorName: `[ TICKET OPENED  ·  ${channel.name} ]`,
-    thumbnail: assets.getHeroGif('ticket'),
-    description:
-      `> Your ticket has been created in ${channel}.\n` +
-      `> Category: **${categoryLabel}**\n` +
-      `> A team member will assist you shortly.`,
+  return cleanEmbed({
+    title: 'Ticket Opened',
+    description: `Your ticket has been created in ${channel}.\nA team member will assist you shortly.`,
+    fields: [kv('Category', [categoryLabel])],
   });
 }
 

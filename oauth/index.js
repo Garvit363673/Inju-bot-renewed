@@ -85,19 +85,15 @@ router.get('/oauth/callback', async (req, res) => {
         const user = await _client.users.fetch(discordUser.id).catch(() => null);
         if (user) {
           const verifiedEmbed = new EmbedBuilder()
-            .setColor(0x07060F)
-            .setTitle('VERIFIED — BADDIES')
-            .setAuthor({ name: 'BADDIES', iconURL: _client.user.displayAvatarURL() })
-            .setDescription([
-              `${require('../utils/iconMap').icon('STATUS_SUCCESS')} **Verification Successful**`,
-              '_ _',
-              `**Discord**  ${discordUser.username}`,
-              `**Linked**  <t:${Math.floor(Date.now() / 1000)}:R>`,
-              '_ _',
-              'You have been granted access to the server.',
-            ].join('\n'))
-            .setFooter({ text: 'BADDIES', iconURL: _client.user.displayAvatarURL() })
-            .setTimestamp();
+            .setColor(0x57F287)
+            .setTitle('✅ Verification Successful')
+            .setDescription('You have been granted access to the server.')
+            .addFields(
+              { name: '▾ Discord', value: `▾ ${discordUser.username}`, inline: true },
+              { name: '▾ Linked',  value: `▾ <t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+            )
+            .setThumbnail(user.displayAvatarURL({ size: 128 }))
+            .setFooter({ text: 'BADDIES Bot • Verification', iconURL: _client.user.displayAvatarURL() });
           await user.send({ embeds: [verifiedEmbed] });
         }
       } catch (dmErr) {
@@ -134,12 +130,10 @@ router.get('/oauth/callback', async (req, res) => {
         if (user) {
           const { EmbedBuilder } = require('discord.js');
           const failEmbed = new EmbedBuilder()
-            .setColor(0x07060F)
-            .setTitle(`${require('../utils/iconMap').icon('STATUS_ERROR')}  Verification Failed — BADDIES`)
-            .setAuthor({ name: 'BADDIES', iconURL: _client.user.displayAvatarURL() })
-            .setDescription(`${require('../utils/iconMap').icon('STATUS_ERROR')} **Verification failed.**\nPlease try again later.`)
-            .setFooter({ text: 'BADDIES', iconURL: _client.user.displayAvatarURL() })
-            .setTimestamp();
+            .setColor(0xED4245)
+            .setTitle('❌ Verification Failed')
+            .setDescription('Something went wrong. Please try again later.')
+            .setFooter({ text: 'BADDIES Bot • Verification', iconURL: _client.user.displayAvatarURL() });
           await user.send({ embeds: [failEmbed] });
         }
       } catch {}

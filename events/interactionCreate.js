@@ -104,18 +104,17 @@ async function sendTranscript(client, ticket, closerUser, channelName, rawMessag
     .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
   const headerEmbed = {
-    color: 0x5865F2,
-    title: `${icon('BTN_TRANSCRIPT')}  Ticket Transcript`,
+    color: 0x2b2d31,
+    title: 'Ticket Transcript',
     fields: [
-      { name: `${icon('BTN_TICKET_OPEN')}  Ticket`,    value: ticket?.ticketId  || 'Unknown',             inline: true },
-      { name: `${icon('ICON_CHANNELS')}  Channel`,     value: `#${channelName}`,                           inline: true },
-      { name: `${icon('HDR_COMMANDS')}  Messages`,     value: `${msgs.length}`,                            inline: true },
-      { name: `${icon('BTN_VIEW_USER')}  Opened By`,   value: ticket?.userId ? `<@${ticket.userId}>` : 'Unknown', inline: true },
-      { name: `${icon('BTN_CLOSE')}  Closed By`,       value: `<@${closerUser.id}>`,                       inline: true },
-      { name: `${icon('STATUS_INFO')}  Closed At`,     value: `<t:${Math.floor(Date.now() / 1000)}:f>`,    inline: true },
+      { name: '▾ Ticket',    value: `▾ ${ticket?.ticketId || 'Unknown'}`,                            inline: true },
+      { name: '▾ Channel',   value: `▾ #${channelName}`,                                             inline: true },
+      { name: '▾ Messages',  value: `▾ ${msgs.length}`,                                              inline: true },
+      { name: '▾ Opened By', value: `▾ ${ticket?.userId ? `<@${ticket.userId}>` : 'Unknown'}`,      inline: true },
+      { name: '▾ Closed By', value: `▾ <@${closerUser.id}>`,                                        inline: true },
+      { name: '▾ Closed At', value: `▾ <t:${Math.floor(Date.now() / 1000)}:f>`,                     inline: true },
     ],
-    footer: { text: 'BADDIES BOT  ·  Ticket System' },
-    timestamp: new Date().toISOString(),
+    footer: { text: 'BADDIES Bot • Ticket System' },
   };
 
   // Build the .txt file content — clean, readable, no code blocks needed
@@ -377,8 +376,8 @@ module.exports = {
 
           await interaction.editReply({
             embeds: [baseEmbed(msg, theme.ASTRAL_CORE)
-              .setTitle(`${icon('BTN_CLOSE')} ${toSmallCaps('TICKET CLOSING')}`)
-              .setDescription(toSmallCaps('**This channel will be deleted in 5 seconds.**\n> Transcript saved.'))],
+              .setTitle('Ticket Closing')
+              .setDescription('This channel will be deleted in 5 seconds.\nTranscript saved.')],
           });
           setTimeout(() => interaction.channel?.delete().catch(() => {}), 5000);
           return;
@@ -587,7 +586,7 @@ module.exports = {
           const oauthURL = config.redirectUri.replace('/callback', '/login') + '?' + params;
 
           await interaction.reply({
-            embeds: [baseEmbed(msg, COLORS.VERIFY).setDescription(toSmallCaps(`${icon('BTN_APPEAL')} **One-click verification**\n\n[**Authorize with Discord →**](${oauthURL})`))],
+            embeds: [baseEmbed(msg, COLORS.VERIFY).setTitle('Verification').setDescription(`One-click verification.\n\n[**Authorize with Discord →**](${oauthURL})`)],
             ephemeral: true,
           });
           return;
@@ -597,7 +596,7 @@ module.exports = {
         if (customId === 'ticket_open_panel') {
           const { buildTicketSelector } = require('../commands/ticket');
           await interaction.reply({
-            embeds: [baseEmbed(msg, theme.ASTRAL_CORE).setDescription('**Select your mission type below:**')],
+            embeds: [baseEmbed(msg, theme.ASTRAL_CORE).setTitle('Open a Ticket').setDescription('Select a category below.')],
             components: [buildTicketSelector()],
             ephemeral: true,
           });
@@ -738,7 +737,7 @@ module.exports = {
           const existing = await Ticket.findOne({ userId: user.id, status: 'open' });
           if (existing) {
             return interaction.reply({
-              embeds: [baseEmbed(msg, COLORS.ERROR).setDescription('You already have an open ticket: <#' + existing.channelId + '>')],
+              embeds: [baseEmbed(msg, COLORS.ERROR).setTitle('❌ Ticket Exists').setDescription('You already have an open ticket: <#' + existing.channelId + '>')],
               ephemeral: true,
             });
           }
@@ -762,18 +761,19 @@ module.exports = {
           await Ticket.create({ ticketId, channelId: ticketChannel.id, guildId: guild.id, userId: user.id, username: user.username, status: 'open' });
 
           const embed = baseEmbed(msg, COLORS.TICKET_OPEN)
-            .setThumbnail(interaction.client.user.displayAvatarURL())
-            .setDescription('-# Your support channel is ready. Staff will assist you shortly.')
+            .setTitle('Ticket Opened')
+            .setThumbnail(user.displayAvatarURL({ size: 128 }))
+            .setDescription('Your support channel is ready. Staff will assist you shortly.')
             .addFields(
-              { name: '? Opened By', value: `**${user.tag}**`,              inline: true },
-              { name: '? Category',  value: `${category.emoji} **${category.label}**`, inline: true },
-              { name: '? Created',   value: `${ts()}`,                      inline: true },
+              { name: '▾ Opened By', value: `▾ ${user}`,                                   inline: true },
+              { name: '▾ Category',  value: `▾ ${category.label}`,                         inline: true },
+              { name: '▾ Created',   value: `▾ ${ts()}`,                                   inline: true },
             );
 
           const row = new ActionRowBuilder().addComponents(BTN.danger('tkt_close', 'Close Ticket'));
           await ticketChannel.send({ content: `${user}`, embeds: [embed], components: [row] });
           await interaction.editReply({
-            embeds: [baseEmbed(msg, COLORS.TICKET_OPEN).setThumbnail(interaction.client.user.displayAvatarURL()).setDescription('? Ticket created: ' + ticketChannel)],
+            embeds: [baseEmbed(msg, COLORS.TICKET_OPEN).setTitle('Ticket Created').setDescription('Your ticket is ready: ' + ticketChannel)],
           });
           return;
         }

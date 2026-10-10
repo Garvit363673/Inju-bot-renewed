@@ -11,6 +11,7 @@ const divider = require('./tokens/divider');
 const author = require('./factories/author');
 const footer = require('./factories/footer');
 const base = require('./factories/base');
+const clean = require('./factories/clean');
 const field = require('./factories/field');
 
 const Success = require('./status/Success');
@@ -40,7 +41,7 @@ const VouchMessageModal = require('./modals/VouchMessageModal');
 
 module.exports = {
   tokens: { colors, zeroWidth, brand, avatar, table, timestamp, divider },
-  factories: { author, footer, base, field },
+  factories: { author, footer, base, field, clean },
 
   success: Success.success,
   error: Error.error,

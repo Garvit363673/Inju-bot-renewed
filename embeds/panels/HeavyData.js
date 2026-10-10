@@ -1,6 +1,6 @@
 'use strict';
 
-const { premiumEmbed, premiumDivider, ACCENT } = require('../theme/premium');
+const { cleanEmbed, kv } = require('../factories/clean');
 const { formatTable } = require('../tokens/table');
 const { asciiRule, thinRule } = require('../tokens/divider');
 const { tsRelative, tsFull } = require('../tokens/timestamp');
@@ -10,7 +10,8 @@ const { section, EMPTY } = require('../factories/field');
 const { icon, iconUnicode } = require('../../utils/iconMap');
 
 function _fmt(n) {
-  if (n == null || isNaN(n)) return '—';
+  if (n == null || n === '') return '—';
+  if (typeof n === 'string' && isNaN(Number(n))) return n;
   return Number(n).toLocaleString('en-US');
 }
 
@@ -23,75 +24,47 @@ function _medal(rank) {
 
 function HeavyData(client, data = {}) {
   const {
-    title = 'Combat Telemetry',
+    title = 'Details',
     subject = null,
     sections = [],
     metrics = [],
     progress = [],
     pagination = null,
-    cachedAt = new Date(),
     requester = null,
-    moduleName = 'TELEMETRY',
+    moduleName = 'DATA',
     image = null,
-    color = null,
-    gifKey = 'pinned',
   } = data;
 
-  const descParts = [];
-  descParts.push(premiumDivider('Heavy Data'));
-  descParts.push('');
+  const fields = [];
+
   if (subject) {
-    const subLine = subject.tag
-      ? `**SUBJECT**  ${subject.mention || `<@${subject.id}>`}  \`(${subject.tag})\``
-      : `**SUBJECT**  ${subject.mention || '`—`'}`;
-    descParts.push(subLine);
+    const mention = subject.mention || (subject.id ? `<@${subject.id}>` : '`—`');
+    const lines = [mention];
+    if (subject.tag || subject.username) lines.push(`\`${subject.tag || subject.username}\``);
+    fields.push(kv('Subject', lines));
   }
 
-  if (sections.length) {
-    for (const sec of sections) {
-      descParts.push(section(sec.title));
-      descParts.push(sec.body || EMPTY);
-    }
+  for (const m of metrics) {
+    const delta = m.delta != null ? (m.delta > 0 ? ` (▲ +${_fmt(m.delta)})` : ` (▼ ${_fmt(m.delta)})`) : '';
+    fields.push(kv(String(m.label || 'Value'), [`${_fmt(m.value)}${delta}`]));
   }
 
-  if (metrics.length) {
-    descParts.push(section('Metrics'));
-    const rows = metrics.map(m => [
-      m.label || EMPTY,
-      `\`${_fmt(m.value)}\``,
-      m.delta != null ? (m.delta > 0 ? ` ▲+${_fmt(m.delta)}` : ` ▼${_fmt(m.delta)}`) : '',
-    ]);
-    descParts.push('```yaml\n' + formatTable(rows) + '\n```');
+  for (const p of progress) {
+    fields.push(kv(String(p.label || 'Progress'), [`${_fmt(p.value || 0)} / ${_fmt(p.max || 100)}`]));
   }
 
-  if (progress.length) {
-    descParts.push(section('Progress'));
-    const lines = progress.map(p => {
-      const label = p.label || 'Progress';
-      const value = p.value || 0;
-      const max = p.max || 100;
-      const style = p.style || 'block';
-      return `**${label}**  \`${_fmt(value)}/${_fmt(max)}\``;
-    });
-    descParts.push(lines.join('\n'));
+  for (const sec of sections) {
+    fields.push({ name: `▾ ${sec.title || 'Details'}`, value: String(sec.body || '—').slice(0, 1024), inline: false });
   }
 
-  descParts.push('');
-  descParts.push(`__**CACHED AT**__  ${tsRelative(cachedAt)}`);
-  descParts.push(premiumDivider());
-
-  const embed = premiumEmbed({
-    palette: 'UTILITY',
-    accentOverride: color || ACCENT.UTILITY,
+  const embed = cleanEmbed({
     client,
-    authorTitle: title,
-    authorIcon: subject ? userAvatar(subject) : null,
-    description: descParts.join('\n'),
+    title,
+    fields,
+    thumbnail: subject ? userAvatar(subject) : null,
+    image,
     moduleName,
     requester,
-    gifKey,
-    image,
-    timestamp: false,
   });
 
   const components = [];

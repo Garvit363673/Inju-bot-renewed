@@ -1,29 +1,23 @@
 'use strict';
 
-const { icon } = require('../utils/iconMap');
-const eb = require('../utils/embedBuilder');
-const assets = require('../utils/assets');
+const { cleanEmbed, kv } = require('../embeds/factories/clean');
+
 const startTime = Date.now();
 
 async function execute(message) {
-  const uptime = Math.floor((Date.now() - startTime) / 1000);
   const cmdCount = global._baddiesCommandCount || 0;
+  const ping = message.client.ws.ping >= 0 ? `${Math.round(message.client.ws.ping)}ms` : 'N/A';
 
-  const lines = [
-    `${icon('MEDAL_1')}  **BADDIES BOT**  \`ASTRAL V2\``,
-    '',
-    `${icon('STATUS_SUCCESS')}  **UPTIME**  <t:${Math.floor(startTime / 1000)}:R>`,
-    `${icon('ICON_HITS')}  **COMMANDS**  \`${cmdCount}\` processed`,
-  ];
-
-  const embed = eb.createEmbed({
-    palette: 'UTILITY',
+  const embed = cleanEmbed({
     client: message.client,
-    authorTitle: 'Bot Information',
-    description: lines.join('\n'),
-    thumbnail: message.client.user?.displayAvatarURL(),
-    image: assets.getHeroGif(),
-    footer: `ASTRAL V2  ·  ${uptime}s uptime`,
+    title: 'Bot Information',
+    fields: [
+      kv('Bot', ['BADDIES Bot', 'Status: Online']),
+      kv('Uptime', [`<t:${Math.floor(startTime / 1000)}:R>`, `Latency: ${ping}`]),
+      kv('Usage', [`${cmdCount} command${cmdCount === 1 ? '' : 's'} processed`, `${message.client.guilds.cache.size} server${message.client.guilds.cache.size === 1 ? '' : 's'}`]),
+    ],
+    thumbnail: message.client.user?.displayAvatarURL({ size: 128 }),
+    requester: message.author,
   });
 
   await message.reply({ embeds: [embed] });

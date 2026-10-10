@@ -1,47 +1,37 @@
 'use strict';
 
 const ui     = require('../utils/ui');
-const theme  = require('../utils/theme');
-const assets = require('../utils/assets');
 const eb     = require('../utils/embedBuilder');
-const ce     = require('../utils/customEmojis');
-const { icon } = require('../utils/iconMap');
+const { cleanEmbed, kv } = require('../embeds/factories/clean');
 
 function accountAgeTier(days) {
-  if (days >= 365 * 3)  return `${icon('STATUS_SUCCESS')} \`VETERAN\``;
-  if (days >= 365)      return `${icon('STATUS_WARNING')} \`MEMBER\``;
-  if (days >= 90)       return `${icon('STATUS_WARNING')} \`REGULAR\``;
-  return                       `${icon('STATUS_ERROR')} \`NEW\``;
+  if (days >= 365 * 3)  return 'Veteran';
+  if (days >= 365)      return 'Member';
+  if (days >= 90)       return 'Regular';
+  return 'New';
 }
 
-function buildUserInfoEmbed(member, client) {
-  const user         = member.user ?? member;
+function buildUserInfoEmbed(member, client, requester = null) {
+  const user          = member.user ?? member;
   const isGuildMember = !!member.joinedTimestamp;
 
   const createdDays = Math.floor((Date.now() - user.createdTimestamp) / 86_400_000);
   const joinedDays  = isGuildMember ? Math.floor((Date.now() - member.joinedTimestamp) / 86_400_000) : null;
+  const roleCount   = isGuildMember ? Math.max(0, (member.roles?.cache?.size || 0) - 1) : null;
 
-  const avatarUrl = user.displayAvatarURL ? user.displayAvatarURL({ size: 4096, dynamic: true, format: 'png' }) : null;
-
-  const body = `> ${icon('BTN_VIEW_USER')} **USER INTEL:** <@${user.id}>\n> ${icon('STATUS_LOADING')} **ACCOUNT AGE:** ${createdDays} DAYS AGO\n\n` +
-    `${ce.premiumDivider('CHRONOLOGY')}\n` +
-    `${icon('STATUS_INFO')} **CREATED:** <t:${Math.floor((user.createdTimestamp || Date.now()) / 1000)}:D>\n` +
-    `${icon('BTN_STATUS')} **TIER:** ${accountAgeTier(createdDays)}\n\n` +
-    `${ce.premiumDivider('SERVER LINK')}\n` +
-    `${icon('HDR_PAGE')} **JOINED:** ${isGuildMember ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:D> (\`${joinedDays} DAYS\`)` : '`NOT IN SERVER`'}\n` +
-    `${icon('CAT_MODERATION')} **ROLES:** ${isGuildMember ? `\`${(member.roles?.cache?.size || 0) - 1} ROLES\`` : '\`N/A\`'}`;
-
-  const embed = eb.createEmbed({
-    color: theme.USERINFO,
+  return cleanEmbed({
     client,
-    authorName: `${icon('CROWN_FLAME')}  USER INTELLIGENCE`,
-    authorIcon: avatarUrl,
-    image: assets.getHeroGif('user'),
-    useBotAvatarThumb: true,
-    description: body,
+    title: 'User Information',
+    fields: [
+      kv('User', [`<@${user.id}>`, `\`${user.username}\``]),
+      kv('Account', [`Created <t:${Math.floor((user.createdTimestamp || Date.now()) / 1000)}:D>`, `${createdDays} days old (${accountAgeTier(createdDays)})`]),
+      kv('Server', isGuildMember
+        ? [`Joined <t:${Math.floor(member.joinedTimestamp / 1000)}:D>`, `${joinedDays} days ago`, `${roleCount} role${roleCount === 1 ? '' : 's'}`]
+        : ['Not in this server']),
+    ],
+    thumbnail: user.displayAvatarURL ? user.displayAvatarURL({ size: 256 }) : null,
+    requester,
   });
-
-  return embed;
 }
 
 function buildServerInfoEmbed(guild, client) {
@@ -66,12 +56,12 @@ async function execute(message, args, client) {
     if (!member) {
       member = await message.guild.members.fetch(targetId);
     }
-    const embed = buildUserInfoEmbed(member, client);
+    const embed = buildUserInfoEmbed(member, client, message.author);
     return message.reply({ embeds: [embed] });
   } catch (err) {
     try {
       const user = await client.users.fetch(targetId);
-      const embed = buildUserInfoEmbed(user, client);
+      const embed = buildUserInfoEmbed(user, client, message.author);
       return message.reply({ embeds: [embed] });
     } catch {
       return message.reply({ embeds: [ui.error(client, 'LOOKUP FAILED', 'COULD NOT LOCATE TARGET IN MAINFRAME.')] });

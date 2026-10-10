@@ -8,7 +8,7 @@ const { botAvatar, isHttpUrl } = require('../tokens/avatar');
 const { ZERO } = require('../tokens/zeroWidth');
 const { icon, ICON_MAP } = require('../../utils/iconMap');
 const { getPinnedBanner, getRandomHero, isValidGifUrl } = require('../../utils/assets');
-const { toSmallCaps } = require('../../utils/smallCaps');
+const { cleanEmbed } = require('../factories/clean');
 
 const PREMIUM = {
   GOLD:       0xFFD700,
@@ -55,13 +55,11 @@ function premiumField(name, value, inline = true) {
 }
 
 function premiumFooter(client, moduleName, requester) {
-  const baseFooter = buildFooter(client, moduleName, requester);
-  baseFooter.text = baseFooter.text;
-  return baseFooter;
+  return buildFooter(client, moduleName, requester);
 }
 
-function premiumDivider(label) {
-  return premiumRule(label, 38);
+function premiumDivider() {
+  return '';
 }
 
 function resolveAccent(palette) {
@@ -79,90 +77,7 @@ function resolveBaseColor(palette) {
 }
 
 function premiumEmbed(options = {}) {
-  const {
-    palette = 'UTILITY',
-    color = null,
-    client = null,
-    title = null,
-    authorTitle = null,
-    authorIcon = null,
-    description = null,
-    fields = null,
-    thumbnail = null,
-    image = null,
-    gifKey = undefined,
-    moduleName = null,
-    requester = null,
-    timestamp = null,
-    enforceBrand = true,
-    autoThumbnail = true,
-    premiumBanner = true,
-    accentOverride = null,
-  } = options;
-
-  const accentColor = accentOverride != null ? accentOverride : resolveAccent(palette);
-
-  const em = new EmbedBuilder()
-    .setColor(0x07060F)
-    .setTimestamp();
-
-  em.data.accent_color = accentColor;
-
-  const scTitle = toSmallCaps(title);
-  const scAuthorTitle = toSmallCaps(authorTitle);
-  const scDesc = toSmallCaps(description);
-  const scFields = Array.isArray(fields) ? fields.map(f => ({
-    name: toSmallCaps(f.name),
-    value: toSmallCaps(f.value),
-    inline: f.inline,
-  })) : fields;
-
-  if (enforceBrand) {
-    em.setAuthor(buildAuthor(client, scAuthorTitle || scTitle, { iconURL: authorIcon }));
-  } else if (scAuthorTitle) {
-    em.setAuthor(buildAuthor(client, scAuthorTitle, { iconURL: authorIcon }));
-  }
-
-  if (scTitle) em.setTitle(scTitle);
-
-  if (scDesc) {
-    em.setDescription(scDesc);
-  } else if (enforceBrand) {
-    em.setDescription(ZERO);
-  }
-
-  if (Array.isArray(scFields) && scFields.length) em.addFields(scFields);
-
-  const thumb = thumbnail || (autoThumbnail ? botAvatar(client) : null);
-  if (isHttpUrl(thumb)) em.setThumbnail(thumb);
-
-  const explicitImage = isHttpUrl(image);
-  let bannerUrl = null;
-  if (premiumBanner && !explicitImage) {
-    if (gifKey === 'pinned' || gifKey === 'banner') {
-      bannerUrl = getPinnedBanner();
-    } else if (gifKey === false || gifKey === null) {
-      bannerUrl = null;
-    } else {
-      bannerUrl = getRandomHero();
-    }
-  }
-
-  if (explicitImage) {
-    em.setImage(image);
-  } else if (bannerUrl && isValidGifUrl(bannerUrl)) {
-    em.setImage(bannerUrl);
-  }
-
-  em.setFooter(premiumFooter(client, moduleName, requester));
-
-  if (timestamp === false) {
-    /* skip */
-  } else if (timestamp instanceof Date) {
-    em.setTimestamp(timestamp);
-  }
-
-  return em;
+  return cleanEmbed(options);
 }
 
 module.exports = {

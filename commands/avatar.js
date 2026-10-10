@@ -1,7 +1,7 @@
 'use strict';
 
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const theme = require('../utils/theme');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { cleanEmbed, kv } = require('../embeds/factories/clean');
 
 function buildAvatarButtons(target) {
   return new ActionRowBuilder().addComponents(
@@ -18,11 +18,16 @@ async function execute(message) {
   const target = message.mentions.users.first() ?? message.author;
   const avatarURL = target.displayAvatarURL({ extension: 'png', size: 1024 });
 
-  const embed = new EmbedBuilder()
-    .setColor(theme.ASTRAL_CORE ?? 0x2B2D31)
-    .setAuthor({ name: target.tag, iconURL: avatarURL })
-    .setImage(avatarURL)
-    .setFooter({ text: `ID: ${target.id}` });
+  const embed = cleanEmbed({
+    client: message.client,
+    title: 'Avatar',
+    fields: [
+      kv('Member', [`<@${target.id}>`, `\`${target.username}\``]),
+      kv('User ID', [`\`${target.id}\``]),
+    ],
+    image: avatarURL,
+    requester: message.author,
+  });
 
   await message.reply({
     embeds:     [embed],

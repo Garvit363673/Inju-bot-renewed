@@ -127,11 +127,18 @@ function userInfoEmbed(memberOrUser, opts = {}) {
 }
 
 function serverInfoEmbed(guild, opts = {}) {
-  return e.HeavyData(opts.client, {
-    title: 'Server Intelligence',
-    moduleName: 'SERVER',
-    sections: [{ title: 'Overview', body: `**Name**  \`${guild.name}\`\n**Members**  \`${guild.memberCount}\`` }],
-  }).embeds[0];
+  const { kv } = e.factories.clean;
+  return e.factories.clean.cleanEmbed({
+    client: opts.client,
+    title: guild.name,
+    fields: [
+      kv('Members', [`${guild.memberCount}`]),
+      kv('Server', [`${guild.channels?.cache?.size ?? 0} channels`, `${guild.roles?.cache?.size ?? 0} roles`, `${guild.premiumSubscriptionCount || 0} boosts`]),
+      kv('Created', [`<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`]),
+    ],
+    thumbnail: typeof guild.iconURL === 'function' ? guild.iconURL({ size: 256 }) : null,
+    requester: opts.requester,
+  });
 }
 
 function helpHubEmbed(client, opts = {}) {
@@ -239,14 +246,22 @@ const medal = _medal;
 const field = (name, value, inline = false) =>
   value != null && value !== '' && value !== '—' ? [{ name, value: String(value), inline }] : [];
 
+function _paletteFor(color) {
+  const t = require('./theme');
+  if (color === t.ERROR || color === t.DANGER) return 'ERROR';
+  if (color === t.SUCCESS) return 'SUCCESS';
+  if (color === t.WARNING) return 'WARNING';
+  return 'UTILITY';
+}
+
 function base(color) {
-  return baseEmbed({ color, palette: 'UTILITY', enforceBrand: false });
+  return baseEmbed({ color, palette: _paletteFor(color), enforceBrand: false });
 }
 
 function branded(color) { return base(color); }
 
 function baseEmbedLegacy(message, color, title) {
-  return baseEmbed({ color, palette: 'UTILITY', authorTitle: title, enforceBrand: false });
+  return baseEmbed({ color, palette: _paletteFor(color), authorTitle: title, enforceBrand: false });
 }
 
 function createEmbed(options = {}) {
@@ -272,8 +287,8 @@ function createEmbed(options = {}) {
     color,
     palette,
     client,
-    authorTitle: authorTitle || authorName || 'EMBED',
-    authorIcon: thumbnail || null,
+    authorTitle: authorTitle || authorName || null,
+    thumbnail: thumbnail || null,
     description,
     image,
     fields,
@@ -286,7 +301,7 @@ function createEmbed(options = {}) {
 }
 
 function makeEmbed(message, desc, color, title) {
-  return baseEmbed({ color, palette: 'UTILITY', authorTitle: title, description: desc, enforceBrand: false });
+  return baseEmbed({ color, palette: _paletteFor(color), authorTitle: title, description: desc, enforceBrand: false });
 }
 
 function make(opts) {

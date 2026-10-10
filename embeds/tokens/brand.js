@@ -5,8 +5,10 @@ const BRAND_DOMAIN = 'ASTRAL V2';
 const BRAND_URL = 'https://aslsite.vercel.app';
 
 function footerText(moduleName) {
-  if (!moduleName) return `${BOT_NAME}  ·  ${BRAND_DOMAIN}`;
-  return `${BOT_NAME}  ·  ${BRAND_DOMAIN}  ·  ${String(moduleName).toUpperCase()}`;
+  if (!moduleName) return `${BOT_NAME} Bot`;
+  const m = String(moduleName);
+  const nice = m === m.toUpperCase() ? m.charAt(0) + m.slice(1).toLowerCase() : m;
+  return `${BOT_NAME} Bot • ${nice}`;
 }
 
 function requesterTag(user) {

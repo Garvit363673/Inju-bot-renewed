@@ -70,7 +70,8 @@ module.exports = {
       logger.error(err.stack);
       message.channel.send({
         embeds: [baseEmbed(message, COLORS.ERROR)
-          .setDescription(`\u274C **${err.message.substring(0, 100)}**`)],
+          .setTitle('❌ Something went wrong')
+          .setDescription(String(err.message).substring(0, 200))],
       }).catch(() => {});
     }
   },

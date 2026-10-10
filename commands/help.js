@@ -15,32 +15,6 @@ function safeUpper(value, fallback = 'UNKNOWN') {
 }
 
 const CATEGORIES = {
-  stats: {
-    emoji:       iconUnicode('CAT_STATS'),
-    glyph:       iconUnicode('CAT_STATS'),
-    banner:      icon('CAT_STATS'),
-    label:       'Stats & Rankings',
-    description: 'Performance data, player cards',
-    color:       theme.STATS,
-    commands: [
-      { name: '!daily',         desc: 'Claim your daily reward — coins, XP, and streak bonus' },
-    ],
-  },
-  system: {
-    emoji:       iconUnicode('CAT_SYSTEM'),
-    glyph:       iconUnicode('CAT_SYSTEM'),
-    banner:      icon('CAT_SYSTEM'),
-    label:       'System',
-    description: 'Diagnostics, domain checks, infrastructure status',
-    color:       theme.DARK_BLUE,
-    commands: [
-      { name: '!check',              desc: 'Mission Control — live WebSocket, API, cache and bot health' },
-      { name: '!domains',            desc: 'Full domain status dashboard for all tracked domains' },
-      { name: '!check-d <domain>',   desc: 'Single domain health check with latency reading' },
-      { name: '!check-s <service>',  desc: 'Service-specific status check' },
-      { name: '!site',               desc: 'Dashboard link — opens the BADDIES web panel' },
-    ],
-  },
   social: {
     emoji:       iconUnicode('CAT_SOCIAL'),
     glyph:       iconUnicode('CAT_SOCIAL'),

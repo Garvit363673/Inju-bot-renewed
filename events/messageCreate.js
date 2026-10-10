@@ -23,7 +23,7 @@ function registerCommands() {
   const commandFiles = [
     'help', 'stats', 'daily', 'domains', 'check', 'check-s', 'check-d',
     'site', 'support', 'info', 'userinfo', 'avatar', 'ban', 'unban', 'ticket', 'vouch', 'hyperlink', 'dm', 'dualhook', 'purge',
-    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed', 'welcome', 'giveaway',
+    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed', 'welcome', 'giveaway', 'invite',
   ];
 
   for (const name of commandFiles) {
@@ -49,7 +49,7 @@ module.exports = {
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     let commandName = args.shift().toLowerCase();
 
-    const aliasMap = { support: 'ticket' };
+    const aliasMap = { support: 'ticket', invites: 'invite' };
     if (aliasMap[commandName]) commandName = aliasMap[commandName];
 
     const command = commands.get(commandName);

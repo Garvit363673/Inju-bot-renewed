@@ -23,7 +23,6 @@ const CATEGORIES = {
     description: 'Performance data, player cards',
     color:       theme.STATS,
     commands: [
-      { name: '!stats [@user]', desc: 'Full player card with rank tier badge and live delta indicators' },
       { name: '!daily',         desc: 'Claim your daily reward — coins, XP, and streak bonus' },
     ],
   },

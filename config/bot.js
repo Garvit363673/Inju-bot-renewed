@@ -30,6 +30,7 @@ const envSchema = z.object({
   VOUCH_CHANNEL_ID: z.string().optional().default(''),
   SUPPORT_CHANNEL_ID: z.string().optional().default('1532405619028529334'),
   GUILD_ID: z.string().optional().default(''),
+  LOG_CHANNEL_ID: z.string().optional().default(''),
   VOUCH_WEBHOOK_URL: z.string().optional().default(''),
   PORT: z.string().optional().default('3000'),
 });
@@ -70,6 +71,7 @@ const config = {
   vouchChannelId: parsed.data.VOUCH_CHANNEL_ID,
   supportChannelId: parsed.data.SUPPORT_CHANNEL_ID,
   guildId: parsed.data.GUILD_ID,
+  logChannelId: parsed.data.LOG_CHANNEL_ID,
   vouchWebhookUrl: parsed.data.VOUCH_WEBHOOK_URL,
   port: parseInt(parsed.data.PORT, 10) || 3000,
 

@@ -123,6 +123,8 @@ function buildHubEmbed(client, user) {
     .setFooter(_footer(client, user));
 
   if (client && client.user) embed.setThumbnail(client.user.displayAvatarURL({ size: 128 }));
+  const gif = require('../embeds/tokens/gifs').randomGif();
+  if (gif) embed.setImage(gif);
   return embed;
 }
 
@@ -138,6 +140,8 @@ function buildCategoryEmbed(key, client, user) {
     .setDescription(`${cat.description}\n\n${lines}`.slice(0, 4096))
     .setFooter(_footer(client, user));
   if (client && client.user) embed.setThumbnail(client.user.displayAvatarURL({ size: 128 }));
+  const gif = require('../embeds/tokens/gifs').randomGif();
+  if (gif) embed.setImage(gif);
   return embed;
 }
 

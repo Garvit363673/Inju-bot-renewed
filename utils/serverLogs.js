@@ -60,6 +60,7 @@ function logEmbed({ client, title, color, fields, description, user }) {
     fields,
     thumbnail: user && typeof user.displayAvatarURL === 'function' ? user.displayAvatarURL({ size: 128 }) : null,
     moduleName: 'Logs',
+    gif: false,
     timestamp: new Date(),
   });
   embed.setColor(color ?? COLORS.neutral);

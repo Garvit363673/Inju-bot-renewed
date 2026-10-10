@@ -5,6 +5,7 @@
 
 const { EmbedBuilder } = require('discord.js');
 const { isHttpUrl, botAvatar } = require('../tokens/avatar');
+const { randomGif } = require('../tokens/gifs');
 
 const BOT_NAME = 'BADDIES';
 const NEUTRAL  = 0x2b2d31;
@@ -53,7 +54,7 @@ function cleanEmbed(options = {}) {
   const {
     palette = null, client = null, title = null, authorTitle = null, description = null,
     fields = null, thumbnail = null, image = null, moduleName = null, requester = null,
-    timestamp = null, autoThumbnail = false,
+    timestamp = null, autoThumbnail = false, gif = undefined,
   } = options;
 
   const em = new EmbedBuilder().setColor(colorFor(palette));
@@ -71,7 +72,12 @@ function cleanEmbed(options = {}) {
 
   const thumb = thumbnail || (autoThumbnail ? botAvatar(client) : null);
   if (isHttpUrl(thumb)) em.setThumbnail(thumb);
+  // An explicit image wins; otherwise a random GIF unless gif === false
   if (isHttpUrl(image)) em.setImage(image);
+  else if (gif !== false) {
+    const g = typeof gif === 'string' && isHttpUrl(gif) ? gif : randomGif();
+    if (g) em.setImage(g);
+  }
 
   em.setFooter(footerFor(client, moduleName, requester));
   if (timestamp instanceof Date) em.setTimestamp(timestamp);

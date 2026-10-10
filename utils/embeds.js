@@ -98,6 +98,8 @@ function vouchEmbed(target, vouches, opts = {}) {
   const footer = { text: `Requested by ${rq ? rq.username : 'unknown'} • BADDIES Bot` };
   if (rq && typeof rq.displayAvatarURL === 'function') footer.iconURL = rq.displayAvatarURL({ size: 64 });
   embed.setFooter(footer);
+  const g = require('../embeds/tokens/gifs').randomGif();
+  if (g) embed.setImage(g);
   return embed;
 }
 

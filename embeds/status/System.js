@@ -10,6 +10,7 @@ function system(client, title, body, opts = {}) {
     moduleName: opts.moduleName || 'SYSTEM',
     requester: opts.requester,
     image: opts.image,
+    gif: opts.gif === undefined ? false : opts.gif,
   });
 }
 

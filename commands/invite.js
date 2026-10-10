@@ -5,8 +5,7 @@ const { EmbedBuilder } = require('discord.js');
 const EMBED_COLOR = 0x2b2d31;
 // NOTE: Discord attachment links expire. For a permanent GIF, upload it to your GitHub repo
 // (e.g. assets/invite.gif) and set INVITE_GIF_URL in Railway to its raw.githubusercontent.com link.
-const DEFAULT_GIF = 'https://media.discordapp.net/attachments/1426373497411862609/1426373497675845824/416a6258674a32733e5a0d5eb98e2a06.gif?ex=6acadf56&is=6ac98dd6&hm=88cd6deea34bd5e58f60b885b7ea2fceb1a76302a3be6a7f0481f296ccc66306&width=512&height=228&';
-const GIF_URL = process.env.INVITE_GIF_URL || DEFAULT_GIF;
+const GIF_URL = process.env.INVITE_GIF_URL || null; // optional fixed GIF; otherwise a random one
 
 function footer(user) {
   const f = { text: `Requested by ${user.username} • BADDIES Bot` };
@@ -53,7 +52,7 @@ async function execute(message) {
       { name: 'Top Invite Links', value: top || '*No invite uses yet.*' },
     )
     .setThumbnail(target.displayAvatarURL({ size: 128 }))
-    .setImage(GIF_URL)
+    .setImage(GIF_URL || require('../embeds/tokens/gifs').randomGif())
     .setFooter(footer(message.author));
 
   await message.reply({ embeds: [embed] });

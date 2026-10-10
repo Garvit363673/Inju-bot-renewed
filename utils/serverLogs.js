@@ -1,9 +1,10 @@
 'use strict';
 
 // Server logs: message edits/deletes, role changes, nicknames, timeouts,
-// joins, leaves, kicks and bans. Everything is posted to LOG_CHANNEL_ID.
+// joins, leaves, kicks and bans. Posted to LOG_WEBHOOK_URL (a Discord webhook),
+// or to LOG_CHANNEL_ID if no webhook is set.
 
-const { AuditLogEvent } = require('discord.js');
+const { AuditLogEvent, WebhookClient } = require('discord.js');
 const config = require('../config/bot');
 const logger = require('./logger');
 const { cleanEmbed, kv } = require('../embeds/factories/clean');
@@ -25,10 +26,24 @@ function userLines(user) {
   return [`<@${user.id}>`, `\`${user.username ?? user.tag ?? user.id}\``];
 }
 
+let _hook = null;
+function getWebhook() {
+  if (_hook !== null) return _hook || null;
+  if (!config.logWebhookUrl) { _hook = false; return null; }
+  try { _hook = new WebhookClient({ url: config.logWebhookUrl }); }
+  catch (err) { logger.error(`Invalid LOG_WEBHOOK_URL: ${err.message}`); _hook = false; }
+  return _hook || null;
+}
+
 async function send(client, guild, embed) {
-  const channelId = config.logChannelId;
-  if (!channelId || !guild) return;
   try {
+    const hook = getWebhook();
+    if (hook) {
+      await hook.send({ username: 'BADDIES Logs', avatarURL: client.user?.displayAvatarURL?.({ size: 128 }), embeds: [embed], allowedMentions: { parse: [] } });
+      return;
+    }
+    const channelId = config.logChannelId;
+    if (!channelId || !guild) return;
     const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
     if (!channel || !channel.isTextBased()) return;
     await channel.send({ embeds: [embed], allowedMentions: { parse: [] } });
@@ -64,8 +79,8 @@ async function findExecutor(guild, type, targetId) {
 }
 
 function init(client) {
-  if (!config.logChannelId) {
-    logger.warn('Server logs are off: set LOG_CHANNEL_ID in Railway to turn them on.');
+  if (!config.logWebhookUrl && !config.logChannelId) {
+    logger.warn('Server logs are off: set LOG_WEBHOOK_URL in Railway to turn them on.');
   }
 
   /* ── Messages ── */

@@ -21,9 +21,9 @@ setInterval(() => {
 
 function registerCommands() {
   const commandFiles = [
-    'help',
-    'support', 'info', 'userinfo', 'avatar', 'ban', 'unban', 'ticket', 'vouch', 'hyperlink', 'dm', 'purge',
-    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'welcome', 'giveaway', 'invite',
+    'help', 'stats', 'daily', 'domains', 'check', 'check-s', 'check-d',
+    'site', 'support', 'info', 'userinfo', 'avatar', 'ban', 'unban', 'ticket', 'vouch', 'hyperlink', 'dm', 'dualhook', 'purge',
+    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed', 'welcome', 'giveaway', 'verify',
   ];
 
   for (const name of commandFiles) {
@@ -49,7 +49,7 @@ module.exports = {
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     let commandName = args.shift().toLowerCase();
 
-    const aliasMap = { support: 'ticket', invites: 'invite' };
+    const aliasMap = { support: 'ticket' };
     if (aliasMap[commandName]) commandName = aliasMap[commandName];
 
     const command = commands.get(commandName);
@@ -70,8 +70,7 @@ module.exports = {
       logger.error(err.stack);
       message.channel.send({
         embeds: [baseEmbed(message, COLORS.ERROR)
-          .setTitle('❌ Something went wrong')
-          .setDescription(String(err.message).substring(0, 200))],
+          .setDescription(`\u274C **${err.message.substring(0, 100)}**`)],
       }).catch(() => {});
     }
   },

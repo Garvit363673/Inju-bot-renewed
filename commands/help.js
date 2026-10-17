@@ -92,7 +92,7 @@ const CATEGORIES = {
 const SITE_URL     = 'https://aslsite.vercel.app/';
 const HIDELINK_URL = 'https://aslv2h.vvzx.workers.dev/';
 const BOT_NAME     = 'BADDIES';
-const EMBED_COLOR  = 0x2b2d31;
+const EMBED_COLOR  = 0x0b0b0f;
 
 const OVERVIEW_KEY = 'overview';
 
@@ -112,15 +112,18 @@ function _summary(cat, max = 5) {
   return shown.length > 100 ? shown.slice(0, 97) + '…' : shown;
 }
 
-// Every command name grouped by category, shown on the Overview page
-function _allCommandsText() {
-  const p = config.prefix;
-  const lines = Object.values(CATEGORIES).map(cat => {
-    const names = [...new Set(cat.commands.map(c => `\`${p}${c.name.replace(/^[!+]/, '').split(' ')[0]}\``))];
-    return `**${cat.label}**\n${names.join(' ')}`;
-  });
-  const text = lines.join('\n\n');
-  return text.length > 1024 ? text.slice(0, 1021) + '…' : text;
+// Command names shown under each dropdown option: as many as fit in Discord's 100 characters
+function _dropdownSummary(cat, p, max = 100) {
+  const names = [...new Set(cat.commands.map(c => p + c.name.replace(/^[!+]/, '').split(' ')[0]))];
+  const full = names.join(', ');
+  if (full.length <= max) return full;
+  let out = '';
+  for (const n of names) {
+    const next = out ? `${out}, ${n}` : n;
+    if (next.length > max - 1) break;
+    out = next;
+  }
+  return `${out}…`;
 }
 
 function _footer(client, user) {
@@ -133,23 +136,25 @@ function buildHubEmbed(client, user) {
   const ping = client && client.ws && Number.isFinite(client.ws.ping) && client.ws.ping >= 0
     ? `${Math.round(client.ws.ping)}ms` : 'N/A';
   const p = config.prefix;
-  const links = [`[Main Site ➜](${SITE_URL})`];
-  if (HIDELINK_URL) links.push(`[Hidden Tool ➜](${HIDELINK_URL})`);
+  const total = new Set(
+    Object.values(CATEGORIES).flatMap(cat => cat.commands.map(c => c.name.split(' ')[0])),
+  ).size;
+
+  const description = [
+    `### ▼ ${BOT_NAME} COMMANDS`,
+    '',
+    '▼ **Status:** Online',
+    `▼ **Latency:** \`${ping}\``,
+    `▼ **Prefix:** \`${p}\``,
+    `▼ **Commands:** \`${total}\``,
+    '▼ **Access:** Public',
+    '',
+    '▼ **Pick a category from the dropdown below to see its commands!**',
+  ].join('\n');
 
   const embed = new EmbedBuilder()
     .setColor(EMBED_COLOR)
-    .setTitle(`${BOT_NAME} Commands`)
-    .addFields(
-      { name: '▾ System Info',   value: `▾ **Status:** Online\n▾ **Latency:** ${ping}`, inline: true },
-      { name: 'Configuration',   value: `▾ **Prefix:** \`${p}\`\n▾ **Access:** Public`,   inline: true },
-      { name: 'Direct Links',    value: links.map(l => `▾ ${l}`).join('\n'),              inline: true },
-      {
-        name: 'Navigation',
-        value: '• Pick a category from the dropdown below to view commands.\n• Click the buttons below or the links above to open tools.',
-        inline: false,
-      },
-      { name: 'All Commands', value: _allCommandsText(), inline: false },
-    )
+    .setDescription(description)
     .setFooter(_footer(client, user));
 
   if (client && client.user) embed.setThumbnail(client.user.displayAvatarURL({ size: 128 }));
@@ -185,7 +190,7 @@ function buildHelpSelector(selected = OVERVIEW_KEY) {
     default: selected === OVERVIEW_KEY,
   }];
   for (const [key, cat] of Object.entries(CATEGORIES)) {
-    const summary = [...new Set(cat.commands.map(c => p + c.name.replace(/^[!+]/, '').split(' ')[0]))].slice(0, 5).join(', ');
+    const summary = _dropdownSummary(cat, p);
     options.push({
       label: cat.label,
       value: key,

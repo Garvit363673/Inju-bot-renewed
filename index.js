@@ -14,6 +14,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildInvites,
+    GatewayIntentBits.GuildModeration,
     GatewayIntentBits.MessageContent,
   ],
   partials: [
@@ -28,6 +29,7 @@ global.client = client;
 require('./utils/inviteTracker').init(client);
 require('./utils/giveaway').init(client);
 require('./utils/boostAnnounce').init(client);
+require('./utils/serverLogs').init(client);
 
 async function bootstrap() {
   await connectDB(config.mongoUri);

@@ -5,6 +5,7 @@ const { connectDB } = require('./database/connection');
 const { startServer } = require('./services/server');
 const antiCrash = require('./utils/antichrash');
 const logger = require('./utils/logger');
+require('./utils/blackEmbeds');
 
 antiCrash();
 

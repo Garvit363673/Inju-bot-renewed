@@ -78,7 +78,7 @@ const config = {
   port: parseInt(parsed.data.PORT, 10) || 3000,
 
 
-  prefix: '!',
+  prefix: '+',
   embedColor: 0x07060f,
   accentColor: 0x00d4ff,
   glowColor: '#00d4ff',

@@ -20,11 +20,14 @@ setInterval(() => {
 }, PROCESSED_CLEANUP_MS).unref();
 
 function registerCommands() {
-  const commandFiles = [
-    'help', 'stats', 'daily', 'domains', 'check', 'check-s', 'check-d',
-    'site', 'support', 'info', 'userinfo', 'avatar', 'ban', 'unban', 'ticket', 'vouch', 'hyperlink', 'dm', 'dualhook', 'purge',
-    'kick', 'timeout', 'warn', 'warnings', 'slowmode', 'lock', 'unlock', 'say', 'role', 'serverinfo', 'botinfo', 'embed', 'welcome', 'giveaway', 'verify',
-  ];
+  // Loads every .js file in the commands folder automatically,
+  // so new commands never need to be added to a list.
+  const fs = require('fs');
+  const path = require('path');
+  const commandFiles = fs
+    .readdirSync(path.join(__dirname, '../commands'))
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => file.slice(0, -3));
 
   for (const name of commandFiles) {
     try {

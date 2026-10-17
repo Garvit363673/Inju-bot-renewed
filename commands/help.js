@@ -15,18 +15,38 @@ function safeUpper(value, fallback = 'UNKNOWN') {
 }
 
 const CATEGORIES = {
-  social: {
+  general: {
     emoji:       iconUnicode('CAT_SOCIAL'),
     glyph:       iconUnicode('CAT_SOCIAL'),
     banner:      icon('CAT_SOCIAL'),
-    label:       'Social & Reputation',
-    description: 'Vouches, reputation tiers, community tools',
+    label:       'General Commands',
+    description: 'Info, invites, reputation and support',
     color:       theme.BLUEBLACK,
     commands: [
-      { name: '!vouch [@user] [note]', desc: 'Add a vouch to a member\'s reputation card' },
-      { name: '!vouch [@user]',        desc: 'View someone\'s full vouch history and tier badge' },
-      { name: '!ticket',               desc: 'Open a support ticket — category selector appears' },
-      { name: '!support',              desc: 'Direct-link shortcut to open a support ticket' },
+      { name: 'help',                  desc: 'Open this menu' },
+      { name: 'info',                  desc: 'Server info — member count, creation date, boost level' },
+      { name: 'serverinfo',            desc: 'Detailed server stats — members, channels, roles, boosts' },
+      { name: 'botinfo',               desc: 'Bot version, uptime, health, command stats' },
+      { name: 'invite [@user]',        desc: 'Show how many people a member has invited' },
+      { name: 'vouch [@user] [note]',  desc: 'Add a vouch to a member\'s reputation card' },
+      { name: 'vouch [@user]',         desc: 'View someone\'s full vouch history and tier badge' },
+      { name: 'ticket',                desc: 'Open a support ticket — category selector appears' },
+      { name: 'support',               desc: 'Direct-link shortcut to open a support ticket' },
+    ],
+  },
+  tools: {
+    emoji:       iconUnicode('CAT_TOOLS'),
+    glyph:       iconUnicode('CAT_TOOLS'),
+    banner:      icon('CAT_TOOLS'),
+    label:       'Tools & Utilities',
+    description: 'Profile tools, formatting helpers, messaging',
+    color:       theme.DARK_BLUE,
+    commands: [
+      { name: 'avatar [@user]',         desc: 'High-res avatar card with download links for 4 sizes' },
+      { name: 'banner [@user|<id>]',    desc: 'Show a member\'s profile banner with download links' },
+      { name: 'userinfo [@user]',       desc: 'Discord profile card — ID, timestamps, roles, account age' },
+      { name: 'hyperlink <url> <text>', desc: 'Generate a masked hyperlink — [text](url) format' },
+      { name: 'dm @user <message>',     desc: 'Send a DM to a member via the bot' },
     ],
   },
   moderation: {
@@ -37,35 +57,33 @@ const CATEGORIES = {
     description: 'Ban management and member actions',
     color:       theme.DANGER,
     commands: [
-      { name: '!ban @user|<id> [reason]',       desc: 'Ban a member — accepts @mention or raw user ID' },
-      { name: '!unban @user|<id> [reason]',    desc: 'Unban a member — accepts @mention or raw user ID' },
-      { name: '!kick @user [reason]',          desc: 'Kick a member from the server' },
-      { name: '!timeout @user <min> [reason]', desc: 'Timeout a member for X minutes' },
-      { name: '!warn @user <reason>',          desc: 'Issue a warning to a member' },
-      { name: '!warnings [@user]',             desc: 'View warning history for a member' },
-      { name: '!slowmode <seconds>',           desc: 'Set channel slowmode (0 = off)' },
-      { name: '!lock',                         desc: 'Lock the current channel' },
-      { name: '!unlock',                       desc: 'Unlock the current channel' },
-      { name: '!say <message>',                desc: 'Send a message as the bot' },
-      { name: '!role <add|remove> @user @role', desc: 'Add or remove a role from a member' },
+      { name: 'purge <1-100>',                  desc: 'Delete the last N messages, or reply to a message and use +purge to delete everything after it' },
+      { name: 'timeout @user <min> [reason]',   desc: 'Timeout a member for X minutes' },
+      { name: 'kick @user [reason]',            desc: 'Kick a member from the server' },
+      { name: 'ban @user|<id> [reason]',        desc: 'Ban a member — accepts @mention or raw user ID' },
+      { name: 'unban @user|<id> [reason]',      desc: 'Unban a member — accepts @mention or raw user ID' },
+      { name: 'warn @user <reason>',            desc: 'Issue a warning to a member' },
+      { name: 'warnings [@user]',               desc: 'View warning history for a member' },
+      { name: 'slowmode <seconds>',             desc: 'Set channel slowmode (0 = off)' },
+      { name: 'lock',                           desc: 'Lock the current channel' },
+      { name: 'unlock',                         desc: 'Unlock the current channel' },
+      { name: 'role <add|remove> @user @role',  desc: 'Add or remove a role from a member' },
+      { name: 'say <message>',                  desc: 'Send a message as the bot' },
     ],
   },
-  tools: {
-    emoji:       iconUnicode('CAT_TOOLS'),
-    glyph:       iconUnicode('CAT_TOOLS'),
-    banner:      icon('CAT_TOOLS'),
-    label:       'Tools & Utilities',
-    description: 'Formatting helpers, profile tools, messaging',
+  server: {
+    emoji:       iconUnicode('CAT_SYSTEM'),
+    glyph:       iconUnicode('CAT_SYSTEM'),
+    banner:      icon('CAT_SYSTEM'),
+    label:       'Server & Events',
+    description: 'Giveaways, welcome card and verification',
     color:       theme.DARK_BLUE,
     commands: [
-      { name: '!avatar [@user]',         desc: 'High-res avatar card with download links for 4 sizes' },
-      { name: '!userinfo [@user]',       desc: 'Discord profile card — ID, timestamps, roles, account age' },
-      { name: '!serverinfo',             desc: 'Detailed server stats — members, channels, roles, boosts' },
-      { name: '!botinfo',               desc: 'Bot version, uptime, health, command stats' },
-      { name: '!info',                  desc: 'Server info — member count, creation date, boost level' },
-      { name: '!hyperlink <url> <text>', desc: 'Generate a masked hyperlink — [text](url) format' },
-      { name: '!dm @user <message>',    desc: 'Send a DM to a member via the bot' },
-      { name: '!invite [@user]',        desc: 'Show how many people a member has invited' },
+      { name: 'giveaway <duration> <winners> [@host] <prize>', desc: 'Start a giveaway — also available as /giveaway create' },
+      { name: 'giveaway end <messageId>',    desc: 'End a giveaway right now and pick winners' },
+      { name: 'giveaway reroll <messageId>', desc: 'Pick new winner(s) for an ended giveaway' },
+      { name: 'welcome [@user]',             desc: 'Send the welcome card for a member' },
+      { name: 'verify',                      desc: 'Post the verification panel in this channel' },
     ],
   },
 };
@@ -94,6 +112,17 @@ function _summary(cat, max = 5) {
   return shown.length > 100 ? shown.slice(0, 97) + '…' : shown;
 }
 
+// Every command name grouped by category, shown on the Overview page
+function _allCommandsText() {
+  const p = config.prefix;
+  const lines = Object.values(CATEGORIES).map(cat => {
+    const names = [...new Set(cat.commands.map(c => `\`${p}${c.name.replace(/^[!+]/, '').split(' ')[0]}\``))];
+    return `**${cat.label}**\n${names.join(' ')}`;
+  });
+  const text = lines.join('\n\n');
+  return text.length > 1024 ? text.slice(0, 1021) + '…' : text;
+}
+
 function _footer(client, user) {
   const e = { text: `Requested by ${user ? user.username : 'unknown'} • ${BOT_NAME} Bot` };
   if (user && typeof user.displayAvatarURL === 'function') e.iconURL = user.displayAvatarURL({ size: 64 });
@@ -119,6 +148,7 @@ function buildHubEmbed(client, user) {
         value: '• Pick a category from the dropdown below to view commands.\n• Click the buttons below or the links above to open tools.',
         inline: false,
       },
+      { name: 'All Commands', value: _allCommandsText(), inline: false },
     )
     .setFooter(_footer(client, user));
 
@@ -133,7 +163,7 @@ function buildCategoryEmbed(key, client, user) {
   const cat = CATEGORIES[key];
   if (!cat) return new EmbedBuilder().setColor(EMBED_COLOR).setTitle('Unknown Category').setDescription('That category does not exist.');
 
-  const lines = cat.commands.map(c => `**\`${c.name}\`**\n${c.desc}`).join('\n\n');
+  const lines = cat.commands.map(c => `**\`${config.prefix}${c.name.replace(/^[!+]/, '')}\`**\n${c.desc}`).join('\n\n');
   const embed = new EmbedBuilder()
     .setColor(EMBED_COLOR)
     .setTitle(`${cat.label}`)
@@ -155,7 +185,7 @@ function buildHelpSelector(selected = OVERVIEW_KEY) {
     default: selected === OVERVIEW_KEY,
   }];
   for (const [key, cat] of Object.entries(CATEGORIES)) {
-    const summary = cat.commands.slice(0, 5).map(c => p + c.name.replace(/^!/, '').split(' ')[0]).join(', ');
+    const summary = [...new Set(cat.commands.map(c => p + c.name.replace(/^[!+]/, '').split(' ')[0]))].slice(0, 5).join(', ');
     options.push({
       label: cat.label,
       value: key,
